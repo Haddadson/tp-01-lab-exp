@@ -4,6 +4,7 @@ from json import dump
 from json import loads
 import datetime
 import time
+from dateutil import relativedelta
 
 def run_query(json, headers):  
     print("Executando query...")
@@ -16,8 +17,6 @@ def run_query(json, headers):
       request = requests.post('https://api.github.com/graphql', json=json, headers=headers)
     
     return request.json()
-
-total_pages = 1
 
 query = """
 query laboratorio {
@@ -62,7 +61,9 @@ json = {
 }
 
 #chave de autenticação do GitHub
-headers = {"Authorization": "Bearer >>INSERIR CHAVE DO GITHUB AQUI<<"} 
+headers = {"Authorization": "Bearer  >>INSERIR CHAVE DO GITHUB AQUI<<"} 
+
+total_pages = 1
 
 print("Pagina -> 1")
 result = run_query(json, headers)
@@ -85,23 +86,39 @@ while (next_page and total_pages < 200):
 print("Gravando cabeçalho CSV...")
 with open(sys.path[0] + "\\ResultadoSprint2.csv", 'a+') as the_file:
         the_file.write("nameWithOwner" + ";" + "stargazers/totalCount" + ";" 
-        + "createdAt" + ";" + "pullRequests/totalCount" + ";" 
+        + "createdAt" + ";" + "repositoryAge" + ";" + "pullRequests/totalCount" + ";" 
         + "releases/totalCount" + ";" + "updatedAt" + ";" + "primaryLanguage/name" + ";" 
-        + "closedIssues/totalCount" + ";" + "totalIssues/totalCount\n")
+        + "closedIssues/totalCount" + ";" + "totalIssues/totalCount" + ";" 
+        + "closedIssues/totalIssues (%)\n")
 
 #salvando os dados em ResultadoSprint2.csv
 print("Gravando linhas CSV...")
 for node in nodes:
     if node['primaryLanguage'] is None:
-        primaryLanguage = "None"
+        primary_language = "None"
     else:
-        primaryLanguage = str(node['primaryLanguage']['name'])
+        primary_language = str(node['primaryLanguage']['name'])
+
+    datetime_now = datetime.datetime.now()
+    datetime_created_at = datetime.datetime.strptime(node['createdAt'], '%Y-%m-%dT%H:%M:%SZ')
+    repository_age = relativedelta.relativedelta(datetime_now, datetime_created_at).years
+    closed_issues = node['closedIssues']['totalCount']
+    total_issues = node['totalIssues']['totalCount']
+
+    if total_issues == 0:
+      closed_issues_ratio = "-"
+    else:
+      closed_issues_ratio = str("{0:.2f}".format(closed_issues / total_issues * 100))
+
     with open(sys.path[0] + "\\ResultadoSprint2.csv", 'a+') as the_file:
         the_file.write(node['nameWithOwner'] + ";" + str(node['stargazers']['totalCount']) + ";" 
-        + datetime.datetime.strptime(node['createdAt'], '%Y-%m-%dT%H:%M:%SZ').strftime('%d/%m/%y %H:%M:%S') 
-        + ";" + str(node['pullRequests']['totalCount']) + ";"
-        + str(node['releases']['totalCount']) + ";" + datetime.datetime.strptime(node['updatedAt'], '%Y-%m-%dT%H:%M:%SZ').strftime('%d/%m/%y %H:%M:%S') + ";" + primaryLanguage + ";" 
-        + str(node['closedIssues']['totalCount']) + ";" + str(node['totalIssues']['totalCount']) + "\n")
+        + datetime_created_at.strftime('%d/%m/%y %H:%M:%S') + ";" + str(repository_age) + ";" 
+        + str(node['pullRequests']['totalCount']) + ";"
+        + str(node['releases']['totalCount']) + ";" 
+        + datetime.datetime.strptime(node['updatedAt'], '%Y-%m-%dT%H:%M:%SZ').strftime('%d/%m/%y %H:%M:%S') + ";" 
+        + primary_language + ";" 
+        + str(closed_issues) + ";" 
+        + str(total_issues) + ";"
+        + str(closed_issues_ratio) + "\n")
 
 print("Finalizando...")
-    
