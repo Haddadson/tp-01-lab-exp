@@ -2,9 +2,9 @@ import sys
 import requests
 from json import dump
 from json import loads
-import datetime
-import time
+from datetime import datetime
 from dateutil import relativedelta
+import time
 
 def run_query(json, headers):  
     print("Executando query...")
@@ -61,7 +61,8 @@ json = {
 }
 
 #chave de autenticação do GitHub
-headers = {"Authorization": "Bearer  >>INSERIR CHAVE DO GITHUB AQUI<<"} 
+token_github = "INSERIR CHAVE DO GITHUB AQUI"
+headers = {"Authorization": "Bearer " + token_github} 
 
 total_pages = 1
 
@@ -86,8 +87,9 @@ while (next_page and total_pages < 200):
 print("Gravando cabeçalho CSV...")
 with open(sys.path[0] + "\\ResultadoSprint2.csv", 'a+') as the_file:
         the_file.write("nameWithOwner" + ";" + "stargazers/totalCount" + ";" 
-        + "createdAt" + ";" + "repositoryAge" + ";" + "pullRequests/totalCount" + ";" 
-        + "releases/totalCount" + ";" + "updatedAt" + ";" + "primaryLanguage/name" + ";" 
+        + "createdAt (UTC)" + ";" + "repositoryAge" + ";" + "pullRequests/totalCount" + ";" 
+        + "releases/totalCount" + ";" + "updatedAt (UTC)" + ";" + "daysSinceLastUpdate" + ";"
+        + "primaryLanguage/name" + ";" 
         + "closedIssues/totalCount" + ";" + "totalIssues/totalCount" + ";" 
         + "closedIssues/totalIssues (%)\n")
 
@@ -95,13 +97,19 @@ with open(sys.path[0] + "\\ResultadoSprint2.csv", 'a+') as the_file:
 print("Gravando linhas CSV...")
 for node in nodes:
     if node['primaryLanguage'] is None:
-        primary_language = "None"
+      primary_language = "None"
     else:
-        primary_language = str(node['primaryLanguage']['name'])
+      primary_language = str(node['primaryLanguage']['name'])
 
-    datetime_now = datetime.datetime.now()
-    datetime_created_at = datetime.datetime.strptime(node['createdAt'], '%Y-%m-%dT%H:%M:%SZ')
+    date_pattern = "%Y-%m-%dT%H:%M:%SZ"
+    datetime_now = datetime.now()
+    datetime_created_at = datetime.strptime(node['createdAt'], date_pattern)
     repository_age = relativedelta.relativedelta(datetime_now, datetime_created_at).years
+    days_since_last_update = (datetime.utcnow() - datetime.strptime(node['updatedAt'], date_pattern)).days
+
+    if (days_since_last_update < 0):
+      days_since_last_update = 0
+
     closed_issues = node['closedIssues']['totalCount']
     total_issues = node['totalIssues']['totalCount']
 
@@ -115,10 +123,12 @@ for node in nodes:
         + datetime_created_at.strftime('%d/%m/%y %H:%M:%S') + ";" + str(repository_age) + ";" 
         + str(node['pullRequests']['totalCount']) + ";"
         + str(node['releases']['totalCount']) + ";" 
-        + datetime.datetime.strptime(node['updatedAt'], '%Y-%m-%dT%H:%M:%SZ').strftime('%d/%m/%y %H:%M:%S') + ";" 
+        + datetime.strptime(node['updatedAt'], '%Y-%m-%dT%H:%M:%SZ').strftime('%d/%m/%y %H:%M:%S') + ";" 
+        + str(days_since_last_update) + ";" 
         + primary_language + ";" 
         + str(closed_issues) + ";" 
         + str(total_issues) + ";"
         + str(closed_issues_ratio) + "\n")
 
 print("Finalizando...")
+    
