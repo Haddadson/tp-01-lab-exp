@@ -38,7 +38,7 @@ query laboratorio {
         releases{
           totalCount
         }
-        updatedAt
+        pushedAt
         primaryLanguage{
           name
         }
@@ -88,7 +88,7 @@ print("Gravando cabeçalho CSV...")
 with open(sys.path[0] + "\\ResultadoSprint2.csv", 'a+') as the_file:
         the_file.write("nameWithOwner" + ";" + "stargazers/totalCount" + ";" 
         + "createdAt (UTC)" + ";" + "repositoryAge" + ";" + "pullRequests/totalCount" + ";" 
-        + "releases/totalCount" + ";" + "updatedAt (UTC)" + ";" + "daysSinceLastUpdate" + ";"
+        + "releases/totalCount" + ";" + "pushedAt (UTC)" + ";" + "daysSinceLastPush" + ";"
         + "primaryLanguage/name" + ";" 
         + "closedIssues/totalCount" + ";" + "totalIssues/totalCount" + ";" 
         + "closedIssues/totalIssues (%)\n")
@@ -105,10 +105,10 @@ for node in nodes:
     datetime_now = datetime.now()
     datetime_created_at = datetime.strptime(node['createdAt'], date_pattern)
     repository_age = relativedelta.relativedelta(datetime_now, datetime_created_at).years
-    days_since_last_update = (datetime.utcnow() - datetime.strptime(node['updatedAt'], date_pattern)).days
+    days_since_last_push = (datetime.utcnow() - datetime.strptime(node['pushedAt'], date_pattern)).days
 
-    if (days_since_last_update < 0):
-      days_since_last_update = 0
+    if (days_since_last_push < 0):
+      days_since_last_push = 0
 
     closed_issues = node['closedIssues']['totalCount']
     total_issues = node['totalIssues']['totalCount']
@@ -123,8 +123,8 @@ for node in nodes:
         + datetime_created_at.strftime('%d/%m/%y %H:%M:%S') + ";" + str(repository_age) + ";" 
         + str(node['pullRequests']['totalCount']) + ";"
         + str(node['releases']['totalCount']) + ";" 
-        + datetime.strptime(node['updatedAt'], '%Y-%m-%dT%H:%M:%SZ').strftime('%d/%m/%y %H:%M:%S') + ";" 
-        + str(days_since_last_update) + ";" 
+        + datetime.strptime(node['pushedAt'], '%Y-%m-%dT%H:%M:%SZ').strftime('%d/%m/%y %H:%M:%S') + ";" 
+        + str(days_since_last_push) + ";" 
         + primary_language + ";" 
         + str(closed_issues) + ";" 
         + str(total_issues) + ";"
