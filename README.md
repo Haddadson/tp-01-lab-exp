@@ -1,4 +1,4 @@
-# tp-01-lab-exp
+# tp-02-lab-exp
 
 Trabalho Prático #02 para a disciplina de Laboratório de Experimentação de Software do curso de Engenharia de Software na PUC-Minas.
 
