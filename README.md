@@ -27,8 +27,6 @@ Para execução do script, é necessário instalar as dependências utilizando o
 
 > pip install dump
 
-> pip install loads
-
 > pip install python-dateutil
 
 Também é necessário inserir um token pessoal de desenvolvedor para acesso à API do GitHub no trecho indicado no código.
