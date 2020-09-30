@@ -3,6 +3,7 @@
 Trabalho Prático #02 para a disciplina de Laboratório de Experimentação de Software do curso de Engenharia de Software na PUC-Minas.
 
 Aluno: Gabriel Henrique Souza Haddad Campos
+
 Repositório: https://github.com/Haddadson/tp-01-lab-exp
 
 A proposta do trabalho consiste na construção de uma aplicação que efetue consultas com paginação à API do GitHub utilizando GraphQL e Python.
